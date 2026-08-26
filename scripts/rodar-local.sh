@@ -12,11 +12,27 @@ set -e
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$RAIZ"
 
-PORTA_BACKEND=3000
-PORTA_TELA=5173
+# Acha a primeira porta livre a partir da preferida -- a 3000 pode estar
+# ocupada por outro programa, e aí o site abriria sem carregar nada.
+achar_porta_livre() {
+  local porta=$1
+  local fim=$((porta + 30))
+  while [ "$porta" -lt "$fim" ]; do
+    if ! (command -v lsof >/dev/null && lsof -nP -iTCP:"$porta" -sTCP:LISTEN >/dev/null 2>&1); then
+      echo "$porta"; return 0
+    fi
+    porta=$((porta + 1))
+  done
+  echo "Nao achei porta livre a partir de $1" >&2; return 1
+}
+
+PORTA_BACKEND=$(achar_porta_livre 3000)
+PORTA_TELA=$(achar_porta_livre 5173)
 
 echo ""
 echo "== Preparando o sistema (so demora na primeira vez) =="
+[ "$PORTA_BACKEND" != "3000" ] && echo "  [i] a porta 3000 estava ocupada; usando a $PORTA_BACKEND"
+[ "$PORTA_TELA" != "5173" ] && echo "  [i] a porta 5173 estava ocupada; usando a $PORTA_TELA"
 
 mkdir -p "$RAIZ/data"
 
@@ -24,7 +40,7 @@ mkdir -p "$RAIZ/data"
 # aponta pra pasta data/ na raiz do projeto -- a mesma convencao do servidor.
 export DATABASE_URL="file:../../data/app.db"
 export PORT="$PORTA_BACKEND"
-export DATA_DIR="$raiz/data"
+export DATA_DIR="$RAIZ/data"
 export BACKEND_PORT="$PORTA_BACKEND"
 
 if [ ! -d "$RAIZ/backend/node_modules" ]; then

@@ -12,11 +12,23 @@ $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $PSScriptRoot
 Set-Location $raiz
 
-$portaBackend = 3000
-$portaTela    = 5173
+# Acha a primeira porta livre a partir da preferida. Nesta maquina a 3000 pode
+# estar ocupada por outro programa -- sem isso, o site abriria sem carregar nada.
+function Achar-PortaLivre([int]$preferida) {
+  foreach ($porta in $preferida..($preferida + 30)) {
+    $emUso = Get-NetTCPConnection -State Listen -LocalPort $porta -ErrorAction SilentlyContinue
+    if (-not $emUso) { return $porta }
+  }
+  throw "Nao achei porta livre a partir da $preferida."
+}
+
+$portaBackend = Achar-PortaLivre 3000
+$portaTela    = Achar-PortaLivre 5173
 
 Write-Host ""
 Write-Host "== Preparando o sistema (so demora na primeira vez) =="
+if ($portaBackend -ne 3000) { Write-Host "  [i] a porta 3000 estava ocupada; usando a $portaBackend" -ForegroundColor Yellow }
+if ($portaTela -ne 5173)    { Write-Host "  [i] a porta 5173 estava ocupada; usando a $portaTela" -ForegroundColor Yellow }
 
 # 1) Pasta de dados (o banco e um arquivo aqui dentro)
 if (-not (Test-Path "$raiz\data")) { New-Item -ItemType Directory -Force "$raiz\data" | Out-Null }
