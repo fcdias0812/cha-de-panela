@@ -1,0 +1,106 @@
+# pessoal-cha-de-panela
+
+## O que é
+
+Site do chá de panela de um casal. Os convidados são cadastrados pelo casal, entram com um
+código pessoal, confirmam presença e reservam presentes de uma lista — sem repetição. O
+casal acompanha tudo num painel protegido por senha.
+
+**Projeto pessoal.** Não tem relação com nenhuma empresa, e o visual é próprio (rosa claro,
+creme e sálvia) — não segue identidade corporativa nenhuma.
+
+## Arquitetura
+
+Só web.
+
+- Frontend: React + Vite (JavaScript)
+- Backend: Node + Express (serve a API e o site — 1 container só)
+- Banco: SQLite (1 arquivo), via Prisma
+- Fotos enviadas: arquivos na pasta de dados (`DATA_DIR`), servidos em `/uploads`
+- App mobile: não. Programa desktop: não.
+
+## Como rodar (dois modos diferentes — não confunda)
+
+**Na máquina de quem constrói: NATIVO, sem Docker.**
+
+- `scripts/rodar-local.ps1` (Windows) ou `scripts/rodar-local.sh` (macOS/Linux).
+- Backend na **3000**, tela (Vite) na **5173**. Abra `http://localhost:5173`.
+- O Vite encaminha `/api` **e `/uploads`** pro backend. A porta do backend vem de
+  `BACKEND_PORT` (padrão 3000) — se divergir, a tela abre mas não carrega dado.
+- `DATABASE_URL=file:../../data/app.db` — o Prisma resolve `file:` a partir de
+  `backend/prisma/`, então isso cai em `data/app.db` na raiz do projeto.
+- `DATA_DIR` aponta pra pasta `data/` na raiz. É onde ficam o banco e as fotos.
+
+**No servidor: CONTAINER.**
+
+- 1 serviço só (`app`): o Express serve `/api/*`, `/uploads/*` **e** os arquivos estáticos
+  do React (build do Vite).
+- `docker compose up --build`; a porta publicada é a `PORT` do `.env` (padrão 4000).
+- **Não remova o `Dockerfile` nem o `docker-compose.yml`** — é como o site sobe no servidor.
+
+## Dados
+
+- `DATA_PATH` (compose) / `DATA_DIR` (aplicação): `./data` no notebook; no servidor, um
+  caminho fora do container.
+- Banco: `app.db`. Fotos enviadas: `uploads/` — ambos dentro da pasta de dados.
+- Backup = copiar a pasta de dados inteira (banco **e** fotos).
+
+## Modelo de dados
+
+- **Convidado** — nome, código único (`ANA-4821`), telefone (opcional), presença
+  (`confirmado` / `nao_vai` / `sem_resposta`), acompanhantes, respondidoEm.
+- **Presente** — nome, foto, categoria, faixa de preço, observação, quantidade.
+- **Reserva** — liga Convidado ↔ Presente com uma quantidade.
+- **Config** — linha única (id = 1): nome do casal, data/hora/endereço/mapa da festa,
+  recado, `limiteTroca` e `senhaPainel`.
+- **Foto** — galeria do casal (url, legenda, ordem).
+
+## Regras que o sistema garante (não quebrar)
+
+- **Nunca expor quem reservou o quê para outro convidado.** A lista pública
+  (`GET /api/presentes`) devolve só `reservado` / `disponivel` — jamais nomes. Nomes só no
+  painel, atrás da senha.
+- **Não deixar reservar além da quantidade.** A checagem é no `convite.controller`, com
+  `somarReservado` do presente; devolve `SEM_DISPONIBILIDADE` (409).
+- **Não reduzir a quantidade de um presente abaixo do já reservado** — senão a escolha de
+  alguém desapareceria sem aviso (`presentes.controller`).
+- **Depois de `limiteTroca` a lista trava**: não reserva nem cancela (`configService.listaAberta`).
+  O prazo vale até o **fim** do dia escolhido.
+- **Convidado só cancela a própria reserva** (confere `convidadoId`).
+- **`PUT /api/painel/config` atualiza só os campos enviados.** Cada aba do painel manda os
+  seus; se isso virar sobrescrita total, salvar as configurações apaga os dados da festa.
+- **Datas escolhidas no calendário são guardadas ao meio-dia UTC** (e o limite de troca às
+  23:59:59 UTC). Sem isso, "14/11" aparece como "13/11" pra quem está no Brasil.
+- **Senha do painel** vive na tabela `Config`; chega em cada pedido no cabeçalho
+  `x-painel-senha` (o front guarda no `sessionStorage`, que sai quando a aba fecha).
+
+## Padrões do código (não mudar sem motivo)
+
+- Resposta da API sempre: `{ success, data }` (ok) ou `{ success, error: { message, code } }`.
+- Backend em routes → controllers → services. **Banco só nos services.**
+- Frontend fala com a API só pelo `src/lib/api.js` — nunca `fetch` solto nas telas.
+- Mensagens de erro em português, escritas pra convidado leigo ler.
+- Nomes de arquivos, funções e variáveis em português.
+
+## Estado atual
+
+Última atualização: 26/08/2026
+Feito e validado rodando na máquina:
+
+- Cadastro de convidados com código pessoal + link do convite
+- Confirmação de presença com acompanhantes e relatório de presenças
+- Presentes com foto, categoria, faixa de preço, observação e quantidade
+- Reserva sem repetição, cancelamento e trava por data limite
+- Painel "Quem leva o quê"
+- Galeria de fotos do casal com envio de imagem
+- Dados da festa + contagem regressiva
+
+Há dados de exemplo no banco local (3 convidados, 3 presentes, 2 fotos) — apagar antes de
+usar de verdade, ou apagar a pasta `data/` e rodar `npx prisma migrate deploy` de novo.
+
+## Pendências conhecidas
+
+- **Senha inicial `chadepanela`** — trocar em Nosso site → Configurações antes de publicar.
+- Fora de escopo (pode vir depois): aviso por e-mail/WhatsApp, página "nossa história",
+  convidado sugerir presente, cota/Pix, recado do convidado, login separado por pessoa,
+  envio automático dos convites.

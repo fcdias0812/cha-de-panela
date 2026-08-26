@@ -1,0 +1,78 @@
+// Banco de dados do projeto: SQLite (1 arquivo por projeto).
+// O caminho vem da variável DATABASE_URL (definida no docker-compose / .env).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Convidado ──────────────────────────────────────────────────────
+// Cadastrado pelo casal. O "codigo" é a chave pessoal: serve digitado
+// na tela de entrar e também embutido no link (/convite/ANA-4821).
+model Convidado {
+  id            Int       @id @default(autoincrement())
+  nome          String
+  codigo        String    @unique
+  telefone      String?
+  presenca      String    @default("sem_resposta") // confirmado | nao_vai | sem_resposta
+  acompanhantes Int       @default(0)
+  respondidoEm  DateTime?
+  criadoEm      DateTime  @default(now())
+  reservas      Reserva[]
+}
+
+// ── Presente ───────────────────────────────────────────────────────
+// Item da lista. "quantidade" permite repetir o mesmo presente
+// (ex: 6 panos de prato → o site mostra "2 de 6 reservados").
+model Presente {
+  id         Int       @id @default(autoincrement())
+  nome       String
+  fotoUrl    String?
+  categoria  String?
+  faixaPreco String?
+  observacao String?
+  quantidade Int       @default(1)
+  criadoEm   DateTime  @default(now())
+  reservas   Reserva[]
+}
+
+// ── Reserva ────────────────────────────────────────────────────────
+// Liga um convidado a um presente. Cancelável até o limite de troca.
+model Reserva {
+  id          Int       @id @default(autoincrement())
+  presenteId  Int
+  convidadoId Int
+  quantidade  Int       @default(1)
+  criadoEm    DateTime  @default(now())
+  presente    Presente  @relation(fields: [presenteId], references: [id], onDelete: Cascade)
+  convidado   Convidado @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
+}
+
+// ── Configuração da festa ──────────────────────────────────────────
+// Tabela de UMA linha só (id = 1). Guarda os dados da festa, a senha
+// do painel e a data limite pra trocar presente.
+model Config {
+  id            Int       @id @default(1)
+  nomeCasal     String    @default("Nós dois")
+  dataFesta     DateTime?
+  horaFesta     String?
+  endereco      String?
+  linkMapa      String?
+  limiteTroca   DateTime?
+  recado        String?
+  senhaPainel   String    @default("chadepanela")
+  atualizadoEm  DateTime  @updatedAt
+}
+
+// ── Foto do casal ──────────────────────────────────────────────────
+model Foto {
+  id       Int      @id @default(autoincrement())
+  url      String
+  legenda  String?
+  ordem    Int      @default(0)
+  criadoEm DateTime @default(now())
+}

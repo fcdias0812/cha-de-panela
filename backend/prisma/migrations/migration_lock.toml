@@ -1,0 +1,2 @@
+# Não editar. Indica para qual banco as migrations foram feitas.
+provider = "sqlite"

@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    container_name: cha-de-panela
+    restart: unless-stopped
+    ports:
+      # esquerda = porta no computador (.env)  |  direita = porta dentro da caixa
+      - "${PORT:-4000}:3000"
+    environment:
+      - PORT=3000
+      # O banco é um arquivo dentro da pasta de dados montada abaixo.
+      - DATABASE_URL=file:/app/data/app.db
+      # Banco e fotos do casal moram aqui dentro.
+      - DATA_DIR=/app/data
+    volumes:
+      # Os dados ficam FORA da caixa, no computador — sobrevivem a rebuild.
+      - "${DATA_PATH:-./data}:/app/data"

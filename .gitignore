@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# Ambiente (contém configuração local — nunca subir)
+.env
+
+# DADOS REAIS — nunca subir para o Git
+data/
+*.db
+*.db-journal
+*.sqlite
+
+# Build do frontend
+frontend/dist/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log

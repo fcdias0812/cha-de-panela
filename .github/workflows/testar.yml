@@ -1,0 +1,37 @@
+# Teste automático: roda a cada Pull Request.
+# Confere duas coisas: (1) o teste do backend passa; (2) o site inteiro sobe
+# dentro do container e responde. Se qualquer uma falhar, o PR é reprovado.
+name: Teste do sistema
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instala e testa o backend
+        working-directory: backend
+        env:
+          DATABASE_URL: "file:./test.db"
+        run: |
+          npm install
+          npx prisma generate
+          npm test
+
+      - name: Confere que o site sobe (build + health check)
+        run: |
+          docker build -t cha-teste .
+          docker run -d --name cha -e PORT=3000 -e DATABASE_URL=file:/app/data/app.db -p 3000:3000 cha-teste
+          sleep 12
+          curl --fail http://localhost:3000/api/health || (docker logs cha && exit 1)
+          docker rm -f cha

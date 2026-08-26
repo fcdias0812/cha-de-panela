@@ -1,0 +1,24 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend do site do chá de panela (Express + Prisma + SQLite)",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^5.22.0"
+  },
+  "allowScripts": {
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "prisma@5.22.0": true
+  }
+}
