@@ -164,7 +164,7 @@ export default function PresentesLista() {
           Comece cadastrando na aba <Link to="/painel/presentes/cadastrar">Cadastrar</Link>.
         </p>
       ) : (
-        <div className="tabela-caixa">
+        <div className="tabela-caixa tabela-cartoes">
           <table>
             <thead>
               <tr>
@@ -179,7 +179,7 @@ export default function PresentesLista() {
             <tbody>
               {presentes.map((p) => (
                 <tr key={p.id}>
-                  <td>
+                  <td data-rotulo="">
                     {p.fotoUrl ? (
                       <img
                         src={p.fotoUrl}
@@ -208,7 +208,7 @@ export default function PresentesLista() {
                       </div>
                     )}
                   </td>
-                  <td>
+                  <td data-rotulo="Presente">
                     <span className="nome-forte">{p.nome}</span>
                     {p.observacao && (
                       <div
@@ -222,17 +222,17 @@ export default function PresentesLista() {
                       </div>
                     )}
                   </td>
-                  <td>
+                  <td data-rotulo="Categoria">
                     {p.categoria ? (
                       <span className="etiqueta salvia">{p.categoria}</span>
                     ) : (
                       <span style={{ color: "var(--tinta-suave)" }}>—</span>
                     )}
                   </td>
-                  <td style={{ fontSize: 13, color: "var(--tinta-suave)" }}>
+                  <td data-rotulo="Preço" style={{ fontSize: 13, color: "var(--tinta-suave)" }}>
                     {p.faixaPreco || "—"}
                   </td>
-                  <td>
+                  <td data-rotulo="Reservado">
                     <strong>
                       {p.reservado} de {p.quantidade}
                     </strong>
@@ -240,7 +240,7 @@ export default function PresentesLista() {
                       <span style={{ width: `${(p.reservado / p.quantidade) * 100}%` }} />
                     </div>
                   </td>
-                  <td>
+                  <td data-rotulo="">
                     <div className="acoes-linha">
                       <button
                         className="icone-botao"

@@ -94,9 +94,27 @@ Feito e validado rodando na máquina:
 - Painel "Quem leva o quê"
 - Galeria de fotos do casal com envio de imagem
 - Dados da festa + contagem regressiva
+- **Responsivo no celular**, conferido em 375px, 768px e 1280px
 
-Há dados de exemplo no banco local (3 convidados, 3 presentes, 2 fotos) — apagar antes de
-usar de verdade, ou apagar a pasta `data/` e rodar `npx prisma migrate deploy` de novo.
+Há dados de exemplo no banco local (casal "Clara & Fabrício", 3 convidados, 3 presentes e
+4 fotos CC0 do Wikimedia Commons) — apagar antes de usar de verdade, ou apagar a pasta
+`data/` e rodar `npx prisma migrate deploy` de novo.
+
+## Responsivo (o que foi feito e por quê)
+
+Ponto de virada em **768px** (`index.css`, no fim do arquivo):
+
+- **Tabelas do painel viram cartões empilhados.** As três telas de tabela têm a classe
+  `tabela-cartoes`, e cada `<td>` carrega um `data-rotulo` — no celular o cabeçalho some e
+  o rótulo aparece ao lado do valor. Sem isso o casal teria que arrastar tabela pro lado no
+  celular. **Ao adicionar coluna nova, ponha o `data-rotulo` nela também**, senão a célula
+  aparece sem legenda.
+- **Campos de formulário com 16px no celular.** Abaixo disso o iPhone dá zoom sozinho ao
+  tocar no campo e o site fica torto.
+- **Alvos de toque de 44px** (`.icone-botao`, botões pequenos, chips de filtro).
+- **Menu lateral vira gaveta** com fundo escurecido; o botão de menu só aparece no celular.
+- Nenhuma tela pode fazer a página rolar de lado — o que for largo rola dentro da própria
+  caixa (`overflow-x: auto`).
 
 ## Pendências conhecidas
 

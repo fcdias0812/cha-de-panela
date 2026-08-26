@@ -124,7 +124,7 @@ export default function ConvidadosLista() {
           Comece cadastrando na aba <Link to="/painel/convidados/cadastrar">Cadastrar</Link>.
         </p>
       ) : (
-        <div className="tabela-caixa">
+        <div className="tabela-caixa tabela-cartoes">
           <table>
             <thead>
               <tr>
@@ -138,7 +138,7 @@ export default function ConvidadosLista() {
             <tbody>
               {convidados.map((c) => (
                 <tr key={c.id}>
-                  <td>
+                  <td data-rotulo="Nome">
                     <span className="nome-forte">{c.nome}</span>
                     {c.telefone && (
                       <div style={{ fontSize: 12, color: "var(--tinta-suave)" }}>
@@ -146,10 +146,10 @@ export default function ConvidadosLista() {
                       </div>
                     )}
                   </td>
-                  <td>
+                  <td data-rotulo="Código">
                     <span className="codigo">{c.codigo}</span>
                   </td>
-                  <td>
+                  <td data-rotulo="Presença">
                     <span
                       className={`etiqueta ${
                         c.presenca === "confirmado"
@@ -167,7 +167,7 @@ export default function ConvidadosLista() {
                       </div>
                     )}
                   </td>
-                  <td>
+                  <td data-rotulo="Vai levar">
                     {(c.reservas || []).length === 0 ? (
                       <span style={{ color: "var(--tinta-suave)", fontStyle: "italic" }}>
                         nada ainda
@@ -181,7 +181,7 @@ export default function ConvidadosLista() {
                       ))
                     )}
                   </td>
-                  <td>
+                  <td data-rotulo="">
                     <div className="acoes-linha">
                       <button
                         className="icone-botao"

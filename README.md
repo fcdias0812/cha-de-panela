@@ -28,6 +28,13 @@ Projeto **pessoal**. Não tem relação com nenhuma empresa.
   editar; e a tela **Quem leva o quê**.
 - **Nosso site** — fotos do casal, dados da festa e configurações (senha e prazo de troca).
 
+O site funciona bem no **celular**: as tabelas do painel viram cartões empilhados, o menu
+lateral vira gaveta e nenhuma tela obriga a arrastar pro lado.
+
+> As fotos que estão no site agora são **de exemplo** — fotos de casais em licença CC0
+> (domínio público) do [Wikimedia Commons](https://commons.wikimedia.org). Troque pelas
+> suas em **Nosso site → Fotos**.
+
 ---
 
 ## Como rodar no seu computador

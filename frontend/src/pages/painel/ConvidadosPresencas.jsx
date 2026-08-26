@@ -45,7 +45,7 @@ export default function ConvidadosPresencas() {
       {dados.convidados.length === 0 ? (
         <p className="vazio">Nenhum convidado cadastrado ainda.</p>
       ) : (
-        <div className="tabela-caixa">
+        <div className="tabela-caixa tabela-cartoes">
           <table>
             <thead>
               <tr>
@@ -58,8 +58,8 @@ export default function ConvidadosPresencas() {
             <tbody>
               {dados.convidados.map((c) => (
                 <tr key={c.id}>
-                  <td className="nome-forte">{c.nome}</td>
-                  <td>
+                  <td data-rotulo="Convidado" className="nome-forte">{c.nome}</td>
+                  <td data-rotulo="Resposta">
                     <span
                       className={`etiqueta ${
                         c.presenca === "confirmado"
@@ -72,8 +72,8 @@ export default function ConvidadosPresencas() {
                       {textoPresenca(c.presenca)}
                     </span>
                   </td>
-                  <td>{c.presenca === "confirmado" ? c.acompanhantes : "—"}</td>
-                  <td style={{ color: "var(--tinta-suave)" }}>
+                  <td data-rotulo="Acompanhantes">{c.presenca === "confirmado" ? c.acompanhantes : "—"}</td>
+                  <td data-rotulo="Respondeu em" style={{ color: "var(--tinta-suave)" }}>
                     {c.respondidoEm ? dataCurta(c.respondidoEm) : "—"}
                   </td>
                 </tr>
