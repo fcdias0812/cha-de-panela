@@ -37,6 +37,10 @@ Só web.
   do React (build do Vite).
 - `docker compose up --build`; a porta publicada é a `PORT` do `.env` (padrão 4000).
 - **Não remova o `Dockerfile` nem o `docker-compose.yml`** — é como o site sobe no servidor.
+- **Render**: `render.yaml` (blueprint) sobe a MESMA imagem do `Dockerfile`, com disco
+  persistente em `/app/data`. O disco é obrigatório — sem ele o banco e as fotos somem a
+  cada deploy — e exige plano pago. `DATABASE_URL=file:/app/data/app.db`, `DATA_DIR=/app/data`;
+  a porta vem do `PORT` que o Render injeta.
 
 ## Dados
 

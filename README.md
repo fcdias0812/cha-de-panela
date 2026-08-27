@@ -65,7 +65,9 @@ O script instala o que falta, prepara o banco, sobe tudo e abre o navegador em
 
 ## Como colocar no ar
 
-O site precisa de um endereço público (é assim que os convidados entram). Com Docker:
+O site precisa de um endereço público (é assim que os convidados entram).
+
+### Num servidor seu, com Docker
 
 ```bash
 docker compose up --build
@@ -74,6 +76,28 @@ docker compose up --build
 A porta publicada vem do `.env` (copie de `.env.example`). Os dados — banco **e** as fotos
 enviadas — ficam na pasta apontada por `DATA_PATH`, fora do container: é só essa pasta que
 precisa de backup.
+
+### No Render
+
+O arquivo `render.yaml` já descreve tudo. No painel do Render: **New → Blueprint** e aponte
+para este repositório — ele lê o `render.yaml` e cria o serviço sozinho.
+
+É a **mesma imagem** do Dockerfile acima, então nada no código muda. O que não pode faltar:
+
+- **Disco persistente** montado em `/app/data` (já está no `render.yaml`). Sem ele o Render
+  apaga o banco e as fotos a cada publicação — o disco padrão do container é descartável.
+- **Plano pago.** O plano gratuito do Render não aceita disco persistente.
+- As variáveis `DATABASE_URL=file:/app/data/app.db` e `DATA_DIR=/app/data` (também já estão
+  no `render.yaml`). A porta o próprio Render define, e o servidor já a respeita.
+
+As migrations rodam sozinhas a cada publicação (é o `CMD` do Dockerfile), então o banco
+começa vazio e pronto — **sem os dados de exemplo** que existem na sua máquina.
+
+> Serviço com disco não tem publicação sem queda: o Render para a versão antiga antes de
+> subir a nova. São alguns segundos fora do ar a cada deploy.
+
+**Backup:** o Render tira uma foto (snapshot) diária do disco, guardada por pelo menos sete
+dias. Para uma cópia sua, baixe a pasta `/app/data` pelo shell do serviço.
 
 ---
 

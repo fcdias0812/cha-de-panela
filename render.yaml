@@ -1,0 +1,31 @@
+# Como o site sobe no Render.
+#
+# É a MESMA imagem do Dockerfile que roda no seu computador — nada de código muda.
+# O segredo é o "disk" lá embaixo: sem ele o Render apaga o banco e as fotos a cada
+# publicação, porque o disco padrão do container é descartável.
+#
+# Para usar: no painel do Render → New → Blueprint → aponte para este repositório.
+
+services:
+  - type: web
+    name: cha-de-panela
+    runtime: docker
+    # O disco persistente EXIGE plano pago (no "free" ele não pode ser anexado).
+    plan: starter
+    # Não dá para trocar depois de criado. "virginia" é o mais perto do Brasil.
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    # O Render usa isto para saber se o site subiu de verdade.
+    healthCheckPath: /api/health
+    envVars:
+      # O banco é um arquivo DENTRO do disco persistente abaixo.
+      - key: DATABASE_URL
+        value: file:/app/data/app.db
+      # Banco e fotos enviadas pelo casal moram aqui.
+      - key: DATA_DIR
+        value: /app/data
+    disk:
+      name: dados
+      # Tem que bater com o DATA_DIR acima — é o que sobrevive às publicações.
+      mountPath: /app/data
+      sizeGB: 1
