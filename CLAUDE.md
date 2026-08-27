@@ -127,11 +127,13 @@ Feito e validado rodando na máquina:
 - Galeria de fotos do casal com envio de imagem
 - Dados da festa + contagem regressiva
 - **Responsivo no celular**, conferido em 375px, 768px e 1280px
-- **Pronto para o Vercel + Turso** — conferido na máquina: os dois caminhos do `db.js`
-  (arquivo e adaptador libSQL) leem e gravam, `preparar-turso` cria as tabelas e é seguro
-  repetir, e a API responde inteira pelo caminho do Turso. O que NÃO deu pra conferir aqui:
-  a publicação no Vercel em si e o build do Docker (não há Docker nesta máquina — quem
-  confere é o GitHub Actions no PR).
+- **NO AR no Vercel, com o banco no Turso** — publicado e conferido em produção:
+  cadastro de convidado pelo painel grava e lista de volta, ou seja, a função do Vercel
+  fala com o Turso de verdade (o motor do Prisma pro Linux está indo junto no pacote).
+  Conferido antes, na máquina: os dois caminhos do `db.js` (arquivo e adaptador libSQL),
+  o `preparar-turso` (cria as tabelas e é seguro repetir) e a API inteira pelo Turso.
+  O que segue SEM conferência aqui: o build do Docker (não há Docker nesta máquina —
+  quem confere é o GitHub Actions no PR).
 
 Há dados de exemplo no banco local (casal "Clara & Fabrício", 3 convidados, 3 presentes e
 4 fotos CC0 do Wikimedia Commons) — apagar antes de usar de verdade, ou apagar a pasta
