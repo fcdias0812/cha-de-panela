@@ -40,6 +40,12 @@ Só web.
 - `api/index.js` é o ponto de entrada lá: monta o MESMO `backend/src/app.js` e o exporta,
   sem `listen`. As telas vêm da CDN, direto de `frontend/dist`.
 - `vercel.json` manda `/api/*` pra função e todo o resto pro `index.html` (SPA).
+- **`"framework": null` no `vercel.json` é obrigatório.** Sem ele a Vercel vê `frontend/`
+  e `backend/` e classifica o projeto como **Services** (o modo multi-serviço dela); nesse
+  modo ela exige uma chave `services` no arquivo e **o botão Deploy fica travado**. O
+  `framework: null` devolve a detecção normal. Não tire essa linha.
+- Nada de comentário no `vercel.json`: o schema tem `additionalProperties: false`, então
+  até uma chave `"//"` reprova o arquivo. Explicações vão aqui.
 - **O disco do Vercel é descartável.** Por isso o banco é o Turso, e as fotos vão no banco.
   Não reintroduza gravação em arquivo — sumiria a cada publicação.
 - Tabelas no Turso: `npm run preparar-turso` (o `prisma migrate` não funciona por HTTP).
