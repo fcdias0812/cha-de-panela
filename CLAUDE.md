@@ -15,8 +15,12 @@ Só web.
 
 - Frontend: React + Vite (JavaScript)
 - Backend: Node + Express (serve a API e o site — 1 container só)
-- Banco: SQLite (1 arquivo), via Prisma
-- Fotos enviadas: arquivos na pasta de dados (`DATA_DIR`), servidos em `/uploads`
+- Banco: SQLite via Prisma. Em **dois destinos, mesmo schema**: arquivo (`data/app.db`) na
+  máquina/Docker/Render, e **Turso** (SQLite hospedado, por HTTP) no Vercel. Quem escolhe é
+  `backend/src/db.js`, olhando `TURSO_DATABASE_URL`.
+- Fotos: **guardadas dentro do banco**, como texto (`data:image/jpeg;base64,...`). São
+  reduzidas no navegador antes (`frontend/src/lib/imagem.js`). Não existe mais upload de
+  arquivo nem multer.
 - App mobile: não. Programa desktop: não.
 
 ## Como rodar (dois modos diferentes — não confunda)
@@ -30,6 +34,17 @@ Só web.
 - `DATABASE_URL=file:../../data/app.db` — o Prisma resolve `file:` a partir de
   `backend/prisma/`, então isso cai em `data/app.db` na raiz do projeto.
 - `DATA_DIR` aponta pra pasta `data/` na raiz. É onde ficam o banco e as fotos.
+
+**No Vercel: FUNÇÃO + CDN (é o caminho gratuito).**
+
+- `api/index.js` é o ponto de entrada lá: monta o MESMO `backend/src/app.js` e o exporta,
+  sem `listen`. As telas vêm da CDN, direto de `frontend/dist`.
+- `vercel.json` manda `/api/*` pra função e todo o resto pro `index.html` (SPA).
+- **O disco do Vercel é descartável.** Por isso o banco é o Turso, e as fotos vão no banco.
+  Não reintroduza gravação em arquivo — sumiria a cada publicação.
+- Tabelas no Turso: `npm run preparar-turso` (o `prisma migrate` não funciona por HTTP).
+- `app.js` só serve `public/` e `/uploads` **se as pastas existirem** — no Vercel não
+  existem, e sem essa checagem todo endereço desconhecido daria 500.
 
 **No servidor: CONTAINER.**
 
@@ -46,8 +61,9 @@ Só web.
 
 - `DATA_PATH` (compose) / `DATA_DIR` (aplicação): `./data` no notebook; no servidor, um
   caminho fora do container.
-- Banco: `app.db`. Fotos enviadas: `uploads/` — ambos dentro da pasta de dados.
-- Backup = copiar a pasta de dados inteira (banco **e** fotos).
+- Banco: `app.db`. A pasta `uploads/` só guarda fotos ANTIGAS (de antes da mudança); fotos
+  novas vão no banco.
+- Backup = copiar `app.db` (as fotos estão dentro dele). No Vercel, o backup é o do Turso.
 
 ## Modelo de dados
 
@@ -77,6 +93,12 @@ Só web.
   23:59:59 UTC). Sem isso, "14/11" aparece como "13/11" pra quem está no Brasil.
 - **Senha do painel** vive na tabela `Config`; chega em cada pedido no cabeçalho
   `x-painel-senha` (o front guarda no `sessionStorage`, que sai quando a aba fecha).
+- **Nada de gravar arquivo em disco em tempo de execução.** No Vercel o disco é
+  somente-leitura e descartável. Foto nova = texto no banco.
+- **O limite do `express.json` é 6 MB** (`app.js`) por causa das fotos — o padrão de 100 KB
+  barraria qualquer uma. O Vercel corta em 4,5 MB por pedido, e `imagem.js` mira ~700 KB.
+- **`backend/src/db.js` é o único lugar que decide o destino do banco.** Services continuam
+  usando `prisma.*` sem saber se é arquivo ou Turso.
 
 ## Padrões do código (não mudar sem motivo)
 
@@ -99,6 +121,11 @@ Feito e validado rodando na máquina:
 - Galeria de fotos do casal com envio de imagem
 - Dados da festa + contagem regressiva
 - **Responsivo no celular**, conferido em 375px, 768px e 1280px
+- **Pronto para o Vercel + Turso** — conferido na máquina: os dois caminhos do `db.js`
+  (arquivo e adaptador libSQL) leem e gravam, `preparar-turso` cria as tabelas e é seguro
+  repetir, e a API responde inteira pelo caminho do Turso. O que NÃO deu pra conferir aqui:
+  a publicação no Vercel em si e o build do Docker (não há Docker nesta máquina — quem
+  confere é o GitHub Actions no PR).
 
 Há dados de exemplo no banco local (casal "Clara & Fabrício", 3 convidados, 3 presentes e
 4 fotos CC0 do Wikimedia Commons) — apagar antes de usar de verdade, ou apagar a pasta
@@ -123,6 +150,10 @@ Ponto de virada em **768px** (`index.css`, no fim do arquivo):
 ## Pendências conhecidas
 
 - **Senha inicial `chadepanela`** — trocar em Nosso site → Configurações antes de publicar.
+- **Fotos antigas com endereço `/uploads/...`** continuam no banco apontando pra arquivo. No
+  Vercel elas não aparecem: é preciso reenviar por Nosso site → Fotos.
+- **`npm audit` acusa o CLI do Prisma** (deepmerge-ts). É ferramenta de build, não código
+  que atende pedido; `audit fix --force` rebaixaria o Prisma e quebraria o adaptador.
 - Fora de escopo (pode vir depois): aviso por e-mail/WhatsApp, página "nossa história",
   convidado sugerir presente, cota/Pix, recado do convidado, login separado por pessoa,
   envio automático dos convites.

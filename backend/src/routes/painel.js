@@ -3,9 +3,7 @@ const express = require("express");
 const painelController = require("../controllers/painel.controller");
 const convidadosController = require("../controllers/convidados.controller");
 const presentesController = require("../controllers/presentes.controller");
-const uploadController = require("../controllers/upload.controller");
 const { exigirSenhaDoPainel } = require("../middlewares/painel");
-const { upload } = require("../lib/upload");
 
 const router = express.Router();
 
@@ -40,7 +38,7 @@ router.get("/fotos", painelController.listarFotos);
 router.post("/fotos", painelController.criarFoto);
 router.delete("/fotos/:id", painelController.removerFoto);
 
-// Envio de imagem (foto do casal ou do presente)
-router.post("/upload", upload.single("foto"), uploadController.enviarFoto);
+// Não há mais rota de upload: a foto é reduzida no próprio navegador e
+// chega junto do presente/da galeria, como texto, dentro do JSON.
 
 module.exports = router;

@@ -1,20 +1,20 @@
 // Único ponto que fala com a API. As telas usam SÓ isto (nunca fetch solto).
 // Já entende o formato padrão { success, data } / { success, error }.
 import { senhaDoPainel } from "./sessao";
+import { prepararFoto } from "./imagem";
 
 const BASE = "/api";
 
 async function pedir(caminho, opcoes = {}) {
-  const { painel, corpo, metodo, arquivo } = opcoes;
+  const { painel, corpo, metodo } = opcoes;
 
-  const cabecalhos = {};
-  if (!arquivo) cabecalhos["Content-Type"] = "application/json";
+  const cabecalhos = { "Content-Type": "application/json" };
   if (painel) cabecalhos["x-painel-senha"] = senhaDoPainel() || "";
 
   const res = await fetch(BASE + caminho, {
-    method: metodo || (corpo || arquivo ? "POST" : "GET"),
+    method: metodo || (corpo ? "POST" : "GET"),
     headers: cabecalhos,
-    body: arquivo ? arquivo : corpo ? JSON.stringify(corpo) : undefined,
+    body: corpo ? JSON.stringify(corpo) : undefined,
   });
 
   const json = await res.json().catch(() => ({}));
@@ -77,10 +77,9 @@ export const api = {
   criarFoto: (dados) => pedir("/painel/fotos", { painel: true, corpo: dados }),
   removerFoto: (id) => pedir("/painel/fotos/" + id, { painel: true, metodo: "DELETE" }),
 
-  // Envio de imagem: vai como formulário, não como JSON.
-  enviarFoto: (file) => {
-    const dados = new FormData();
-    dados.append("foto", file);
-    return pedir("/painel/upload", { painel: true, arquivo: dados });
-  },
+  // Foto: NÃO vai mais para o servidor como arquivo. Ela é reduzida aqui
+  // mesmo, no navegador, e devolvida como texto — quem chamou guarda esse
+  // texto no presente ou na galeria, como faria com qualquer outro campo.
+  // (A forma de chamar continua a mesma: api.enviarFoto(arquivo).)
+  enviarFoto: async (file) => ({ url: await prepararFoto(file) }),
 };

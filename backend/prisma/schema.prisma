@@ -1,8 +1,16 @@
-// Banco de dados do projeto: SQLite (1 arquivo por projeto).
-// O caminho vem da variável DATABASE_URL (definida no docker-compose / .env).
+// Banco de dados do projeto: SQLite.
+//
+// Dois destinos, MESMO banco (SQLite) e MESMO schema:
+//   - Na sua máquina / Docker: um arquivo (data/app.db), via DATABASE_URL.
+//   - No Vercel: Turso (SQLite hospedado), via TURSO_DATABASE_URL.
+// O Vercel apaga o disco a cada deploy, por isso lá o arquivo não serve.
+// Quem escolhe um ou outro é o src/db.js — o schema é o mesmo nos dois.
 
 generator client {
   provider = "prisma-client-js"
+  // "native" = a sua máquina. O outro é o Linux que o Vercel usa para rodar
+  // a função; sem ele o site sobe mas quebra ao falar com o banco.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

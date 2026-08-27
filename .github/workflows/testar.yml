@@ -28,6 +28,21 @@ jobs:
           npx prisma generate
           npm test
 
+      - name: Confere que o ponto de entrada do Vercel carrega
+        env:
+          DATABASE_URL: "file:./test.db"
+        run: |
+          node -e "
+          const app = require('./api/index.js');
+          if (typeof app !== 'function') { throw new Error('api/index.js nao exportou o app do Express'); }
+          const s = app.listen(0, async () => {
+            const r = await fetch('http://localhost:' + s.address().port + '/api/health');
+            if (r.status !== 200) { throw new Error('health check do Vercel respondeu ' + r.status); }
+            console.log('ponto de entrada do Vercel: ok');
+            s.close();
+          });
+          "
+
       - name: Confere que o site sobe (build + health check)
         run: |
           docker build -t cha-teste .

@@ -1,0 +1,14 @@
+{
+  "name": "cha-de-panela",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site do chá de panela — raiz do projeto (o código está em backend/ e frontend/)",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "instalar": "npm --prefix backend install && npm --prefix frontend install",
+    "build": "npm --prefix backend run generate && npm --prefix frontend run build",
+    "preparar-turso": "npm --prefix backend run preparar-turso"
+  }
+}
